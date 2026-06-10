@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import '../src/i18n';
 import useAuthStore from './store/authStore';
+import { GOOGLE_CLIENT_ID, IS_GOOGLE_AUTH_ENABLED } from './config/googleAuth';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -45,8 +46,7 @@ export default function App() {
     initialize();
   }, [initialize]);
 
-  return (
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}>
+  const app = (
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Toaster
@@ -82,6 +82,15 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </QueryClientProvider>
+  );
+
+  if (!IS_GOOGLE_AUTH_ENABLED) {
+    return app;
+  }
+
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      {app}
     </GoogleOAuthProvider>
   );
 }

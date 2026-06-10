@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from 'react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { cardsApi, generatorApi } from '../api';
+import { cardsApi, generatorApi, getApiErrorMessage } from '../api';
 import CardForm from '../components/ui/CardForm';
 
 export default function EditCardPage() {
@@ -43,7 +43,7 @@ export default function EditCardPage() {
           fd.append('name', p.name);
           fd.append('description', p.description || '');
           fd.append('link_label', p.link_label || 'Переглянути');
-          fd.append('link_url', p.link_url || '');
+          fd.append('link_url', normalizeUrl(p.link_url));
           if (p.bg_image instanceof File) fd.append('bg_image', p.bg_image);
           await cardsApi.addProject(id, fd);
         }
@@ -58,8 +58,8 @@ export default function EditCardPage() {
       qc.invalidateQueries(['card', id]);
       toast.success(t('toast.saved'));
       return updated;
-    } catch {
-      toast.error(t('toast.error'));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, t('toast.error')));
       return null;
     } finally {
       setIsSaving(false);
@@ -146,4 +146,11 @@ export default function EditCardPage() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
+}
+
+function normalizeUrl(value) {
+  const trimmed = (value || '').trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
 }

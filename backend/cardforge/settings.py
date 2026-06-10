@@ -79,14 +79,28 @@ DATABASES = {
     "default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR}/db.sqlite3")
 }
 
-# ── Cache (Redis) ─────────────────────────────────────────────────────────────
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("REDIS_URL", default="redis://localhost:6379/0"),
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+# ── Cache ────────────────────────────────────────────────────────────────────
+REDIS_URL = env("REDIS_URL", default="")
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "cardforge-dev-cache",
+        }
+    }
+
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 AUTH_USER_MODEL = "users.User"

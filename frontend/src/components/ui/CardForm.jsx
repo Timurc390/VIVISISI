@@ -58,6 +58,16 @@ export default function CardForm({ initialData = {}, onSave, onGenerate, isSavin
   const fileRefs = useRef({});
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
+  const sphereValue = SPHERES.includes(form.sphere) ? form.sphere : 'other';
+  const isCustomSphere = sphereValue === 'other';
+
+  const handleSphereChange = (value) => {
+    if (value === 'other') {
+      set('sphere', form.sphere && !SPHERES.includes(form.sphere) ? form.sphere : '');
+      return;
+    }
+    set('sphere', value);
+  };
 
   // Skills
   const addSkill = (s) => {
@@ -147,7 +157,15 @@ export default function CardForm({ initialData = {}, onSave, onGenerate, isSavin
           <div style={S.section}>{t('form.section_contacts')}</div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
             {[['email',t('form.email'),'ivan@example.com'],['phone',t('form.phone'),'+380 99 123-45-67']].map(([k,l,ph]) => (
-              <Field key={k} label={l}><input style={S.input} value={form[k]} onChange={e => set(k,e.target.value)} placeholder={ph} /></Field>
+              <Field key={k} label={l}>
+                <input
+                  type={k === 'email' ? 'email' : 'text'}
+                  style={S.input}
+                  value={form[k]}
+                  onChange={e => set(k,e.target.value)}
+                  placeholder={ph}
+                />
+              </Field>
             ))}
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
@@ -265,9 +283,22 @@ export default function CardForm({ initialData = {}, onSave, onGenerate, isSavin
             </div>
           </Field>
           <Field label={t('form.sphere')}>
-            <select style={{ ...S.input, cursor:'pointer' }} value={form.sphere} onChange={e => set('sphere', e.target.value)}>
+            <select
+              style={{ ...S.input, cursor:'pointer' }}
+              value={sphereValue}
+              onChange={e => handleSphereChange(e.target.value)}
+            >
               {SPHERES.map(s => <option key={s} value={s}>{t(`spheres.${s}`)}</option>)}
+              <option value="other">{t('form.sphere_other')}</option>
             </select>
+            {isCustomSphere && (
+              <input
+                style={{ ...S.input, marginTop: '8px' }}
+                value={form.sphere}
+                onChange={e => set('sphere', e.target.value)}
+                placeholder={t('form.sphere_placeholder')}
+              />
+            )}
           </Field>
         </div>
 
@@ -408,7 +439,7 @@ export default function CardForm({ initialData = {}, onSave, onGenerate, isSavin
                   <input style={S.input} value={modalData.link_label} onChange={e => setModalData(d=>({...d,link_label:e.target.value}))} placeholder="Переглянути" />
                 </Field>
                 <Field label={t('form.project_link_url')}>
-                  <input style={S.input} value={modalData.link_url} onChange={e => setModalData(d=>({...d,link_url:e.target.value}))} placeholder="https://..." />
+                  <input type="url" style={S.input} value={modalData.link_url} onChange={e => setModalData(d=>({...d,link_url:e.target.value}))} placeholder="https://..." />
                 </Field>
               </div>
 

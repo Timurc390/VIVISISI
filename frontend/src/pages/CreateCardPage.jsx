@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { cardsApi, generatorApi } from '../api';
+import { cardsApi, generatorApi, getApiErrorMessage } from '../api';
 import CardForm from '../components/ui/CardForm';
 
 export default function CreateCardPage() {
@@ -44,7 +44,7 @@ export default function CreateCardPage() {
           fd.append('name', p.name);
           fd.append('description', p.description || '');
           fd.append('link_label', p.link_label || 'Переглянути');
-          fd.append('link_url', p.link_url || '');
+          fd.append('link_url', normalizeUrl(p.link_url));
           if (p.bg_image instanceof File) fd.append('bg_image', p.bg_image);
           await cardsApi.addProject(card.id, fd);
         }
@@ -53,7 +53,7 @@ export default function CreateCardPage() {
       toast.success(t('toast.saved'));
       return card;
     } catch (err) {
-      toast.error(t('toast.error'));
+      toast.error(getApiErrorMessage(err, t('toast.error')));
       return null;
     } finally {
       setIsSaving(false);
@@ -101,4 +101,11 @@ export default function CreateCardPage() {
       />
     </div>
   );
+}
+
+function normalizeUrl(value) {
+  const trimmed = (value || '').trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
 }

@@ -6,20 +6,21 @@ const useAuthStore = create((set, get) => ({
   tokens: JSON.parse(localStorage.getItem('cf_tokens') || 'null'),
   isLoading: false,
   isInitialized: false,
+  isAuthenticated: false,
 
   // Initialize — fetch user if token exists
   initialize: async () => {
     const tokens = JSON.parse(localStorage.getItem('cf_tokens') || 'null');
     if (!tokens?.access) {
-      set({ isInitialized: true });
+      set({ isAuthenticated: false, isInitialized: true });
       return;
     }
     try {
       const { data } = await authApi.me();
-      set({ user: data, tokens, isInitialized: true });
+      set({ user: data, tokens, isAuthenticated: true, isInitialized: true });
     } catch {
       localStorage.removeItem('cf_tokens');
-      set({ user: null, tokens: null, isInitialized: true });
+      set({ user: null, tokens: null, isAuthenticated: false, isInitialized: true });
     }
   },
 
@@ -30,7 +31,7 @@ const useAuthStore = create((set, get) => ({
       const tokens = { access: data.access, refresh: data.refresh };
       localStorage.setItem('cf_tokens', JSON.stringify(tokens));
       const { data: user } = await authApi.me();
-      set({ user, tokens, isLoading: false });
+      set({ user, tokens, isAuthenticated: true, isLoading: false });
       return { success: true };
     } catch (err) {
       set({ isLoading: false });
@@ -45,7 +46,7 @@ const useAuthStore = create((set, get) => ({
       const tokens = { access: data.access, refresh: data.refresh };
       localStorage.setItem('cf_tokens', JSON.stringify(tokens));
       const { data: user } = await authApi.me();
-      set({ user, tokens, isLoading: false });
+      set({ user, tokens, isAuthenticated: true, isLoading: false });
       return { success: true };
     } catch (err) {
       set({ isLoading: false });
@@ -60,7 +61,7 @@ const useAuthStore = create((set, get) => ({
       const tokens = { access: data.access, refresh: data.refresh };
       localStorage.setItem('cf_tokens', JSON.stringify(tokens));
       const { data: user } = await authApi.me();
-      set({ user, tokens, isLoading: false });
+      set({ user, tokens, isAuthenticated: true, isLoading: false });
       return { success: true };
     } catch (err) {
       set({ isLoading: false });
@@ -74,10 +75,10 @@ const useAuthStore = create((set, get) => ({
       if (tokens?.refresh) await authApi.logout({ refresh: tokens.refresh });
     } catch {}
     localStorage.removeItem('cf_tokens');
-    set({ user: null, tokens: null });
+    set({ user: null, tokens: null, isAuthenticated: false });
   },
 
-  updateUser: (userData) => set({ user: userData }),
+  updateUser: (userData) => set({ user: userData, isAuthenticated: Boolean(userData) }),
 
   setLanguage: async (lang) => {
     try {
@@ -86,9 +87,6 @@ const useAuthStore = create((set, get) => ({
     } catch {}
   },
 
-  get isAuthenticated() {
-    return !!get().user;
-  },
 }));
 
 export default useAuthStore;

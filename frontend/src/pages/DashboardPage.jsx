@@ -143,6 +143,12 @@ export default function DashboardPage() {
                       👁 {card.views_count} {t('dashboard.card_views')}
                     </span>
                     <div style={{ display: 'flex', gap: '6px' }}>
+                      <ActionBtn
+                        onClick={() => window.open(`/c/${card.slug}`, '_blank', 'noopener,noreferrer')}
+                        title="Переглянути візитку"
+                      >
+                        👁
+                      </ActionBtn>
                       <ActionBtn onClick={() => navigate(`/cards/${card.id}/edit`)} title={t('dashboard.edit')}>✏️</ActionBtn>
                       <ActionBtn onClick={() => copyLink(card.slug)} title={t('dashboard.copy_link')}>🔗</ActionBtn>
                       {card.generated_html && <ActionBtn onClick={() => downloadHTML(card)} title={t('dashboard.download')}>💾</ActionBtn>}
