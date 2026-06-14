@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { Github, Linkedin, Mail, MessageCircle, Phone, Globe2 } from 'lucide-react';
 import { cardsApi } from '../api';
 
 export default function PublicCardPage() {
+  const { t } = useTranslation();
   const { slug } = useParams();
   const [card, setCard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +23,7 @@ export default function PublicCardPage() {
     <div style={{ minHeight:'100vh', background:'#0a0a0f', display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ textAlign:'center', color:'#555' }}>
         <div style={{ width:32, height:32, border:'2px solid rgba(232,255,71,0.3)', borderTopColor:'#e8ff47', borderRadius:'50%', animation:'spin 0.7s linear infinite', margin:'0 auto 1rem' }} />
-        <div style={{ fontFamily:'DM Mono, monospace', fontSize:'12px', letterSpacing:'2px' }}>ЗАВАНТАЖЕННЯ...</div>
+        <div style={{ fontFamily:'DM Mono, monospace', fontSize:'12px', letterSpacing:'2px' }}>{t('pages.loading')}</div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -29,8 +32,8 @@ export default function PublicCardPage() {
   if (notFound) return (
     <div style={{ minHeight:'100vh', background:'#0a0a0f', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'DM Sans, sans-serif', color:'#f0ede8', flexDirection:'column', gap:'1rem' }}>
       <div style={{ fontSize:'4rem', opacity:0.2 }}>⬡</div>
-      <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:'2rem', letterSpacing:'3px', color:'rgba(240,237,232,0.3)' }}>ВІЗИТКУ НЕ ЗНАЙДЕНО</div>
-      <Link to="/" style={{ color:'#e8ff47', fontSize:'13px', textDecoration:'none' }}>← На головну</Link>
+      <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:'2rem', letterSpacing:'3px', color:'rgba(240,237,232,0.3)' }}>{t('pages.public_not_found')}</div>
+      <Link to="/" style={{ color:'#e8ff47', fontSize:'13px', textDecoration:'none' }}>← {t('nav.home')}</Link>
     </div>
   );
 
@@ -56,14 +59,14 @@ export default function PublicCardPage() {
           </Link>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
             <span style={{ fontSize:'12px', color:'#555' }}>
-              👁 {card.views_count} переглядів
+              👁 {card.views_count} {t('dashboard.card_views')}
             </span>
             <Link to="/" style={{
               background:'#e8ff47', color:'#0a0a0f', textDecoration:'none',
               borderRadius:'8px', padding:'5px 14px',
               fontFamily:"'Bebas Neue', sans-serif", fontSize:'0.85rem', letterSpacing:'1.5px',
             }}>
-              СТВОРИТИ СВОЮ
+              {t('pages.create_own')}
             </Link>
           </div>
         </motion.div>
@@ -80,6 +83,11 @@ export default function PublicCardPage() {
     );
   }
 
+  const design = card?.design_settings || {};
+  const customSocialLinks = Array.isArray(design.social_links)
+    ? design.social_links.filter(link => (link?.url || '').trim())
+    : [];
+
   // Fallback: plain card if no HTML generated yet
   return (
     <div style={{ minHeight:'100vh', background:'#0a0a0f', color:'#f0ede8', fontFamily:'DM Sans, sans-serif' }}>
@@ -91,6 +99,16 @@ export default function PublicCardPage() {
           <h1 style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:'clamp(2.5rem,6vw,4rem)', letterSpacing:'2px', marginBottom:'0.3rem' }}>{card.full_name}</h1>
           <div style={{ color:'#e8ff47', fontSize:'1.1rem', marginBottom:'1.5rem' }}>{card.role}</div>
           {card.bio && <p style={{ color:'#888', lineHeight:1.7, marginBottom:'2rem', maxWidth:500, margin:'0 auto 2rem' }}>{card.bio}</p>}
+          {design.primary_link_url && (
+            <a href={socialUrl(design.primary_link_url, 'site')} target="_blank" rel="noreferrer" style={{
+              display:'inline-flex', alignItems:'center', gap:'8px',
+              background:'#e8ff47', color:'#0a0a0f', textDecoration:'none',
+              borderRadius:'999px', padding:'11px 18px', fontWeight:800,
+              marginBottom:'2rem',
+            }}>
+              <Globe2 size={16} /> {design.primary_link_label || t('builder.go')}
+            </a>
+          )}
 
           {/* Skills */}
           {card.skills?.length > 0 && (
@@ -103,10 +121,17 @@ export default function PublicCardPage() {
 
           {/* Contacts */}
           <div style={{ display:'flex', gap:'10px', flexWrap:'wrap', justifyContent:'center' }}>
-            {card.email && <ContactBtn href={`mailto:${card.email}`}>✉ {card.email}</ContactBtn>}
-            {card.telegram && <ContactBtn href={`https://t.me/${card.telegram.replace('@','')}`}>✈ {card.telegram}</ContactBtn>}
-            {card.github && <ContactBtn href={`https://${card.github}`}>⬡ {card.github}</ContactBtn>}
-            {card.linkedin && <ContactBtn href={`https://${card.linkedin}`}>💼 LinkedIn</ContactBtn>}
+            {card.email && <ContactBtn href={`mailto:${card.email}`}><Mail size={15} /> {card.email}</ContactBtn>}
+            {card.phone && <ContactBtn href={`tel:${card.phone.replace(/\s|-/g,'')}`}><Phone size={15} /> {card.phone}</ContactBtn>}
+            {card.telegram && <ContactBtn href={socialUrl(card.telegram, 'telegram')}><MessageCircle size={15} /> {card.telegram}</ContactBtn>}
+            {card.github && card.github.includes('github') && <ContactBtn href={socialUrl(card.github, 'github')}><Github size={15} /> {card.github}</ContactBtn>}
+            {card.linkedin && <ContactBtn href={socialUrl(card.linkedin, 'linkedin')}><Linkedin size={15} /> LinkedIn</ContactBtn>}
+            {card.github && !card.github.includes('github') && <ContactBtn href={socialUrl(card.github, 'site')}><Globe2 size={15} /> {t('pages.website')}</ContactBtn>}
+            {customSocialLinks.map((link, index) => (
+              <ContactBtn key={link.id || `${link.platform}-${index}`} href={socialUrl(link.url, link.platform || 'site')}>
+                <Globe2 size={15} /> {link.label || link.platform || t('builder.social')}
+              </ContactBtn>
+            ))}
           </div>
         </motion.div>
       </div>
@@ -124,4 +149,24 @@ function ContactBtn({ href, children }) {
       {children}
     </a>
   );
+}
+
+function socialUrl(value, type) {
+  const trimmed = (value || '').trim();
+  if (!trimmed) return '#';
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) return trimmed;
+  const handle = trimmed.replace(/^@/, '').replace(/^\/+/, '');
+  const kind = (type || '').toLowerCase();
+  if (kind.includes('telegram')) return `https://t.me/${handle.replace(/^t\.me\//i, '')}`;
+  if (kind.includes('instagram')) return `https://instagram.com/${handle.replace(/^instagram\.com\//i, '')}`;
+  if (kind.includes('twitter') || kind === 'x') return `https://x.com/${handle.replace(/^(x|twitter)\.com\//i, '')}`;
+  if (kind.includes('tiktok')) return `https://www.tiktok.com/@${handle.replace(/^@/, '').replace(/^tiktok\.com\/@?/i, '')}`;
+  if (kind.includes('facebook')) return `https://facebook.com/${handle.replace(/^facebook\.com\//i, '')}`;
+  if (kind.includes('youtube')) return handle.includes('.') || handle.includes('/') ? `https://${handle}` : `https://youtube.com/@${handle}`;
+  if (kind.includes('whatsapp')) return `https://wa.me/${handle.replace(/\D/g, '')}`;
+  if (kind.includes('behance')) return `https://behance.net/${handle.replace(/^behance\.net\//i, '')}`;
+  if (kind.includes('dribbble')) return `https://dribbble.com/${handle.replace(/^dribbble\.com\//i, '')}`;
+  if (kind.includes('github') && !handle.includes('.') && !handle.includes('/')) return `https://github.com/${handle}`;
+  if (kind.includes('linkedin') && !handle.includes('linkedin.com')) return `https://www.linkedin.com/in/${handle.replace(/^in\//i, '')}`;
+  return `https://${trimmed}`;
 }

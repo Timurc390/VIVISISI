@@ -146,11 +146,12 @@ export default function LoginPage() {
 }
 
 function Field({ label, error, children }) {
+  const { t } = useTranslation();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
       <label style={{ fontSize: '12px', color: '#888' }}>{label}</label>
       {children}
-      {error && <span style={{ fontSize: '11px', color: '#f87171' }}>Обов'язкове поле</span>}
+      {error && <span style={{ fontSize: '11px', color: '#f87171' }}>{t('form.required')}</span>}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { AlertTriangle, Download, Edit3, Eye, Link as LinkIcon, Plus, Trash2 } from 'lucide-react';
 import { cardsApi } from '../api';
 
 export default function DashboardPage() {
@@ -30,7 +31,7 @@ export default function DashboardPage() {
   };
 
   const downloadHTML = (card) => {
-    if (!card.generated_html) return toast.error('Спочатку згенеруй сайт');
+    if (!card.generated_html) return toast.error(t('dashboard.generate_first'));
     const blob = new Blob([card.generated_html], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -49,15 +50,16 @@ export default function DashboardPage() {
             {t('dashboard.title')}
           </h1>
           <p style={{ color: '#555', fontSize: '13px', marginTop: '4px' }}>
-            {cards.length} {cards.length === 1 ? 'візитка' : 'візиток'}
+            {cards.length} {cards.length === 1 ? t('dashboard.card_single') : t('dashboard.card_plural')}
           </p>
         </div>
         <Link to="/cards/new" style={{
           background: '#e8ff47', color: '#0a0a0f', textDecoration: 'none',
           borderRadius: '10px', padding: '10px 22px',
           fontFamily: "'Bebas Neue', sans-serif", fontSize: '1rem', letterSpacing: '2px',
+          display:'inline-flex', alignItems:'center', gap:'7px',
         }}>
-          + {t('nav.create')}
+          <Plus size={17} /> {t('nav.create')}
         </Link>
       </div>
 
@@ -139,20 +141,20 @@ export default function DashboardPage() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ fontSize: '11px', color: '#444', fontFamily: 'DM Mono, monospace' }}>
-                      👁 {card.views_count} {t('dashboard.card_views')}
+                    <span style={{ fontSize: '11px', color: '#444', fontFamily: 'DM Mono, monospace', display:'inline-flex', alignItems:'center', gap:'4px' }}>
+                      <Eye size={12} /> {card.views_count} {t('dashboard.card_views')}
                     </span>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <ActionBtn
                         onClick={() => window.open(`/c/${card.slug}`, '_blank', 'noopener,noreferrer')}
-                        title="Переглянути візитку"
+                        title={t('dashboard.preview')}
                       >
-                        👁
+                        <Eye size={14} />
                       </ActionBtn>
-                      <ActionBtn onClick={() => navigate(`/cards/${card.id}/edit`)} title={t('dashboard.edit')}>✏️</ActionBtn>
-                      <ActionBtn onClick={() => copyLink(card.slug)} title={t('dashboard.copy_link')}>🔗</ActionBtn>
-                      {card.generated_html && <ActionBtn onClick={() => downloadHTML(card)} title={t('dashboard.download')}>💾</ActionBtn>}
-                      <ActionBtn onClick={() => setConfirmDelete(card.id)} title={t('dashboard.delete')} danger>🗑</ActionBtn>
+                      <ActionBtn onClick={() => navigate(`/cards/${card.id}/edit`)} title={t('dashboard.edit')}><Edit3 size={14} /></ActionBtn>
+                      <ActionBtn onClick={() => copyLink(card.slug)} title={t('dashboard.copy_link')}><LinkIcon size={14} /></ActionBtn>
+                      {card.generated_html && <ActionBtn onClick={() => downloadHTML(card)} title={t('dashboard.download')}><Download size={14} /></ActionBtn>}
+                      <ActionBtn onClick={() => setConfirmDelete(card.id)} title={t('dashboard.delete')} danger><Trash2 size={14} /></ActionBtn>
                     </div>
                   </div>
                 </div>
@@ -186,11 +188,11 @@ export default function DashboardPage() {
                 borderRadius: '16px', padding: '2rem', maxWidth: '360px', width: '100%',
               }}
             >
-              <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>⚠️</div>
+              <div style={{ color:'#f87171', marginBottom: '0.5rem' }}><AlertTriangle size={30} /></div>
               <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{t('dashboard.confirm_delete')}</div>
-              <p style={{ fontSize: '13px', color: '#666', marginBottom: '1.5rem' }}>Цю дію не можна скасувати.</p>
+              <p style={{ fontSize: '13px', color: '#666', marginBottom: '1.5rem' }}>{t('dashboard.delete_warning')}</p>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <button onClick={() => setConfirmDelete(null)} style={cancelBtnStyle}>Скасувати</button>
+                <button onClick={() => setConfirmDelete(null)} style={cancelBtnStyle}>{t('builder.cancel')}</button>
                 <button onClick={() => deleteMutation.mutate(confirmDelete)} style={deleteBtnStyle}>
                   {deleteMutation.isLoading ? '...' : t('dashboard.delete')}
                 </button>
@@ -209,7 +211,8 @@ function ActionBtn({ children, onClick, title, danger }) {
       background: danger ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.04)',
       border: `1px solid ${danger ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.08)'}`,
       borderRadius: '7px', padding: '5px 8px', cursor: 'pointer', fontSize: '13px',
-      transition: 'all 0.15s',
+      transition: 'all 0.15s', color: danger ? '#f87171' : '#888',
+      display:'inline-flex', alignItems:'center', justifyContent:'center',
     }}>
       {children}
     </button>
@@ -226,6 +229,11 @@ function themeGradient(theme) {
     'sunset-red': 'linear-gradient(90deg, #2d0a0a, #f97316)',
     'minimal-gray': 'linear-gradient(90deg, #141414, #888)',
     'purple-haze': 'linear-gradient(90deg, #1a0d2e, #a78bfa)',
+    'aurora': 'linear-gradient(90deg, #061417, #5eead4, #f0abfc)',
+    'mono-lime': 'linear-gradient(90deg, #080a09, #bef264)',
+    'rose-gold': 'linear-gradient(90deg, #fff7f4, #f59e0b)',
+    'glass-blue': 'linear-gradient(90deg, #071827, #60a5fa)',
+    'custom': 'linear-gradient(90deg, #111118, #e8ff47)',
   };
   return map[theme] || map['dark-neon'];
 }

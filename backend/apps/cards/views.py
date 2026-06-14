@@ -18,18 +18,43 @@ class CardViewSet(ModelViewSet):
     @action(detail=True, methods=["post"], url_path="projects")
     def add_project(self, request, pk=None):
         card = self.get_object()
-        serializer = CardProjectSerializer(data=request.data, context={"request": request})
+        existing = None
+        name = (request.data.get("name") or "").strip()
+        link_url = (request.data.get("link_url") or "").strip()
+        if name:
+            existing = card.projects.filter(name=name, link_url=link_url).first()
+
+        serializer = CardProjectSerializer(
+            existing,
+            data=request.data,
+            partial=existing is not None,
+            context={"request": request},
+        )
         if serializer.is_valid():
             serializer.save(card=card)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK if existing else status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=["delete"], url_path="projects/(?P<project_pk>[^/.]+)")
-    def remove_project(self, request, pk=None, project_pk=None):
+    @action(detail=True, methods=["patch", "delete"], url_path="projects/(?P<project_pk>[^/.]+)")
+    def project_detail(self, request, pk=None, project_pk=None):
         card = self.get_object()
         project = get_object_or_404(CardProject, pk=project_pk, card=card)
-        project.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if request.method == "DELETE":
+            project.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = CardProjectSerializer(
+            project,
+            data=request.data,
+            partial=True,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            serializer.save(card=card)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PublicCardView(APIView):

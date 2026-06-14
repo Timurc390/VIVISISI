@@ -13,6 +13,11 @@ THEME_CHOICES = [
     ("sunset-red", "Sunset Red"),
     ("minimal-gray", "Minimal Gray"),
     ("purple-haze", "Purple Haze"),
+    ("aurora", "Aurora"),
+    ("mono-lime", "Mono Lime"),
+    ("rose-gold", "Rose Gold"),
+    ("glass-blue", "Glass Blue"),
+    ("custom", "Custom"),
 ]
 
 LAYOUT_CHOICES = [
@@ -22,6 +27,11 @@ LAYOUT_CHOICES = [
     ("cards", "Cards"),
     ("terminal", "Terminal"),
     ("magazine", "Magazine"),
+    ("deck", "Presentation Deck"),
+    ("resume", "Resume"),
+    ("split-showcase", "Split Showcase"),
+    ("gallery", "Gallery"),
+    ("product", "Product"),
 ]
 
 
@@ -48,6 +58,8 @@ class Card(models.Model):
     theme = models.CharField(_("тема"), max_length=32, choices=THEME_CHOICES, default="dark-neon")
     layout = models.CharField(_("макет"), max_length=32, choices=LAYOUT_CHOICES, default="centered")
     sphere = models.CharField(_("сфера"), max_length=32, default="developer")
+    design_settings = models.JSONField(_("налаштування дизайну"), default=dict, blank=True)
+    content_blocks = models.JSONField(_("кастомні блоки"), default=list, blank=True)
 
     # Generated HTML (cached)
     generated_html = models.TextField(_("згенерований HTML"), blank=True)

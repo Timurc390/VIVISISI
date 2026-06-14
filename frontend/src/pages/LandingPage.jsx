@@ -5,12 +5,13 @@ import { motion } from 'framer-motion';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 
 const FEATURES = [
-  { icon:'⚡', key:'speed',   title:'Миттєва генерація',    desc:'AI аналізує дані та створює унікальний дизайн за секунди' },
-  { icon:'🎨', key:'themes',  title:'8 кольорових тем',     desc:'Від суворого мінімалізму до яскравого неону — знайди свій стиль' },
-  { icon:'📐', key:'layouts', title:'6 макетів сторінок',   desc:'По центру, сайдбар, hero, картки, terminal, журнал' },
-  { icon:'📱', key:'mobile',  title:'Адаптивний дизайн',    desc:'Усі сайти коректно відображаються на будь-якому пристрої' },
-  { icon:'🌐', key:'i18n',    title:'3 мови інтерфейсу',    desc:'Українська, English та Русский — переключай у будь-який момент' },
-  { icon:'💾', key:'export',  title:'Експорт HTML',         desc:'Завантаж готовий файл і розмісти на будь-якому хостингу' },
+  { icon:'⚡', key:'speed' },
+  { icon:'🎨', key:'themes' },
+  { icon:'📐', key:'layouts' },
+  { icon:'🧩', key:'builder' },
+  { icon:'📱', key:'mobile' },
+  { icon:'🌐', key:'i18n' },
+  { icon:'💾', key:'export' },
 ];
 
 const THEMES_PREVIEW = [
@@ -69,7 +70,7 @@ export default function LandingPage() {
 
           {/* Stats */}
           <div style={{ display:'flex', gap:'2.5rem', paddingTop:'2rem', borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-            {[['8', t('hero.stat_themes')], ['6', t('hero.stat_layouts')], ['∞', t('hero.stat_combos')]].map(([num, label]) => (
+            {[['13', t('hero.stat_themes')], ['10', t('hero.stat_layouts')], ['∞', t('hero.stat_combos')]].map(([num, label]) => (
               <div key={label}>
                 <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:'2.4rem', color:'#e8ff47', lineHeight:1 }}>{num}</div>
                 <div style={{ fontSize:'12px', color:'#555', marginTop:'3px' }}>{label}</div>
@@ -82,7 +83,7 @@ export default function LandingPage() {
       {/* THEMES PREVIEW */}
       <section style={{ padding:'2rem 3rem 4rem', maxWidth:1100, margin:'0 auto' }}>
         <motion.div initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.5 }}>
-          <p style={{ fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'3px', color:'#555', textTransform:'uppercase', marginBottom:'1.2rem' }}>ТЕМИ ОФОРМЛЕННЯ</p>
+          <p style={{ fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'3px', color:'#555', textTransform:'uppercase', marginBottom:'1.2rem' }}>{t('landing.themes_title')}</p>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:'10px' }}>
             {THEMES_PREVIEW.map((th, i) => (
               <motion.div key={th.name} initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay: i*0.06 }}
@@ -99,15 +100,15 @@ export default function LandingPage() {
       {/* FEATURES */}
       <section style={{ padding:'3rem', maxWidth:1100, margin:'0 auto' }}>
         <motion.div initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }}>
-          <p style={{ fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'3px', color:'#555', textTransform:'uppercase', marginBottom:'2rem' }}>МОЖЛИВОСТІ</p>
+          <p style={{ fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'3px', color:'#555', textTransform:'uppercase', marginBottom:'2rem' }}>{t('landing.features_title')}</p>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px,1fr))', gap:'1rem' }}>
             {FEATURES.map((f, i) => (
               <motion.div key={f.key} initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay: i*0.07 }}
                 style={{ background:'#111118', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'14px', padding:'1.4rem', transition:'border-color 0.2s' }}
               >
                 <div style={{ fontSize:'1.6rem', marginBottom:'0.7rem' }}>{f.icon}</div>
-                <div style={{ fontSize:'14px', fontWeight:600, marginBottom:'5px', color:'#f0ede8' }}>{f.title}</div>
-                <div style={{ fontSize:'13px', color:'#555', lineHeight:1.6 }}>{f.desc}</div>
+                <div style={{ fontSize:'14px', fontWeight:600, marginBottom:'5px', color:'#f0ede8' }}>{t(`landing.features.${f.key}.title`)}</div>
+                <div style={{ fontSize:'13px', color:'#555', lineHeight:1.6 }}>{t(`landing.features.${f.key}.desc`)}</div>
               </motion.div>
             ))}
           </div>
@@ -118,9 +119,9 @@ export default function LandingPage() {
       <section style={{ padding:'5rem 3rem', textAlign:'center' }}>
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}>
           <h2 style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:'clamp(2.5rem,6vw,5rem)', letterSpacing:'2px', marginBottom:'1rem' }}>
-            ГОТОВИЙ ПОЧАТИ?
+            {t('landing.cta_title')}
           </h2>
-          <p style={{ color:'#555', fontSize:'14px', marginBottom:'2rem' }}>Реєстрація займає 30 секунд — жодної кредитної картки</p>
+          <p style={{ color:'#555', fontSize:'14px', marginBottom:'2rem' }}>{t('landing.cta_desc')}</p>
           <Link to="/register" style={{ background:'#e8ff47', color:'#0a0a0f', textDecoration:'none', borderRadius:'12px', padding:'15px 40px', fontFamily:"'Bebas Neue', sans-serif", fontSize:'1.2rem', letterSpacing:'2px', display:'inline-block' }}>
             {t('hero.cta')} →
           </Link>

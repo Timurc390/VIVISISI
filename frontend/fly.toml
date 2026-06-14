@@ -1,0 +1,17 @@
+app = "cardforge-web"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+  [build.args]
+    REACT_APP_API_URL = "https://cardforge-api.fly.dev/api"
+    REACT_APP_GOOGLE_CLIENT_ID = ""
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]

@@ -33,6 +33,7 @@ class CardSerializer(serializers.ModelSerializer):
             "full_name", "role", "bio",
             "email", "phone", "city", "github", "telegram", "linkedin",
             "skills", "theme", "layout", "sphere",
+            "design_settings", "content_blocks",
             "generated_html", "is_public", "views_count",
             "projects", "created_at", "updated_at",
         ]
@@ -53,7 +54,7 @@ class CardPublicSerializer(serializers.ModelSerializer):
         fields = [
             "id", "slug", "full_name", "role", "bio",
             "email", "phone", "city", "github", "telegram", "linkedin",
-            "skills", "theme", "layout",
+            "skills", "theme", "layout", "design_settings", "content_blocks",
             "generated_html", "views_count",
             "projects", "created_at",
         ]

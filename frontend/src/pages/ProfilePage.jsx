@@ -12,6 +12,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || null);
   const [avatarFile, setAvatarFile] = useState(null);
+  const activeLanguage = (i18n.resolvedLanguage || i18n.language || 'uk').split('-')[0];
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -58,7 +59,7 @@ export default function ProfilePage() {
         {/* Avatar & name card */}
         <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} style={cardStyle}>
           <div style={{ fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'2px', color:'#555', textTransform:'uppercase', marginBottom:'1.2rem' }}>
-            Особисті дані
+            {t('profile.personal_data')}
           </div>
 
           <div style={{ display:'flex', alignItems:'center', gap:'1.2rem', marginBottom:'1.5rem' }}>
@@ -78,13 +79,13 @@ export default function ProfilePage() {
               <div style={{ fontWeight:600, fontSize:'15px', color:'#f0ede8' }}>{user?.full_name || user?.email}</div>
               <div style={{ fontSize:'13px', color:'#555', marginTop:'2px' }}>{user?.email}</div>
               <div style={{ fontSize:'11px', color:'#444', marginTop:'4px', fontFamily:'DM Mono, monospace' }}>
-                Зареєстровано: {user?.created_at ? new Date(user.created_at).toLocaleDateString('uk-UA') : '—'}
+                {t('profile.registered')}: {user?.created_at ? new Date(user.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : i18n.language === 'ru' ? 'ru-RU' : 'uk-UA') : '—'}
               </div>
             </div>
           </div>
 
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'1.2rem' }}>
-            {[['first_name', "Ім'я", 'Іван'], ['last_name', 'Прізвище', 'Коваленко']].map(([k,l,ph]) => (
+            {[['first_name', t('auth.first_name'), t('auth.first_name_placeholder')], ['last_name', t('auth.last_name'), t('auth.last_name_placeholder')]].map(([k,l,ph]) => (
               <div key={k}>
                 <label style={labelStyle}>{l}</label>
                 <input style={inputStyle} value={form[k]} onChange={e => setForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} />
@@ -105,17 +106,18 @@ export default function ProfilePage() {
         {/* Language card */}
         <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.08 }} style={cardStyle}>
           <div style={{ fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'2px', color:'#555', textTransform:'uppercase', marginBottom:'1.2rem' }}>
-            Мова інтерфейсу
+            {t('profile.interface_language')}
           </div>
           <div style={{ display:'flex', gap:'8px' }}>
-            {[['uk','🇺🇦','Українська'],['en','🇬🇧','English'],['ru','🇷🇺','Русский']].map(([code, flag, label]) => (
+            {[['uk','🇺🇦',t('language.uk')],['en','🇬🇧',t('language.en')],['ru','🇷🇺',t('language.ru')]].map(([code, flag, label]) => (
               <button key={code} onClick={() => handleLang(code)} style={{
                 flex:1, padding:'10px 8px', borderRadius:'10px', cursor:'pointer',
-                background: i18n.language === code ? 'rgba(232,255,71,0.1)' : 'rgba(255,255,255,0.03)',
-                border:`1px solid ${i18n.language === code ? 'rgba(232,255,71,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                color: i18n.language === code ? '#e8ff47' : '#888',
+                background: activeLanguage === code ? 'rgba(232,255,71,0.1)' : 'rgba(255,255,255,0.03)',
+                border:`1px solid ${activeLanguage === code ? 'rgba(232,255,71,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                color: activeLanguage === code ? '#e8ff47' : '#888',
                 fontFamily:'DM Sans, sans-serif', fontSize:'13px', transition:'all 0.15s',
                 display:'flex', flexDirection:'column', alignItems:'center', gap:'4px',
+                minWidth:0,
               }}>
                 <span style={{ fontSize:'1.4rem' }}>{flag}</span>
                 <span>{label}</span>
@@ -127,12 +129,12 @@ export default function ProfilePage() {
         {/* Stats card */}
         <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.14 }} style={cardStyle}>
           <div style={{ fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'2px', color:'#555', textTransform:'uppercase', marginBottom:'1.2rem' }}>
-            Обліковий запис
+            {t('profile.account')}
           </div>
           <div style={{ display:'flex', gap:'1rem' }}>
             {[
               { icon:'📧', label:'Email', value: user?.email },
-              { icon:'🌐', label:'Авторизація', value: 'Email / Google' },
+              { icon:'🌐', label:t('profile.authorization'), value: 'Email / Google' },
             ].map(item => (
               <div key={item.label} style={{ flex:1, background:'rgba(255,255,255,0.03)', borderRadius:'10px', padding:'0.8rem 1rem' }}>
                 <div style={{ fontSize:'1.2rem', marginBottom:'4px' }}>{item.icon}</div>

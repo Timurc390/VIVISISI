@@ -65,6 +65,10 @@ export const cardsApi = {
     api.post(`/cards/${cardId}/projects/`, data, {
       headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {},
     }),
+  updateProject: (cardId, projectId, data) =>
+    api.patch(`/cards/${cardId}/projects/${projectId}/`, data, {
+      headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {},
+    }),
   deleteProject: (cardId, projectId) =>
     api.delete(`/cards/${cardId}/projects/${projectId}/`),
 };
@@ -77,7 +81,10 @@ export const generatorApi = {
 export const getApiErrorMessage = (error, fallback = 'Something went wrong') => {
   const data = error?.response?.data;
   if (!data) return fallback;
-  if (typeof data === 'string') return data;
+  if (typeof data === 'string') {
+    if (/<html[\s>]|<!doctype html/i.test(data)) return fallback;
+    return data;
+  }
   if (Array.isArray(data)) return data[0] || fallback;
   if (typeof data === 'object') {
     const firstValue = Object.values(data)[0];

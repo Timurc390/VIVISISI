@@ -24,30 +24,37 @@ export default function CreateCardPage() {
           email: form.email, phone: form.phone, city: form.city,
           github: form.github, telegram: form.telegram, linkedin: form.linkedin,
           skills: form.skills, theme: form.theme, layout: form.layout, sphere: form.sphere,
+          design_settings: form.design_settings, content_blocks: form.content_blocks,
         });
         card = data;
       } else {
         const { data } = await cardsApi.create({
-          full_name: form.full_name || 'Без назви', role: form.role || 'Спеціаліст',
+          full_name: form.full_name || t('pages.untitled'), role: form.role || t('pages.specialist'),
           bio: form.bio, email: form.email, phone: form.phone, city: form.city,
           github: form.github, telegram: form.telegram, linkedin: form.linkedin,
           skills: form.skills, theme: form.theme, layout: form.layout, sphere: form.sphere,
+          design_settings: form.design_settings, content_blocks: form.content_blocks,
         });
         card = data;
         setCardId(card.id);
       }
 
       // Sync projects
+      const savedProjects = [];
       for (const p of projects) {
         if (!p._saved) {
           const fd = new FormData();
           fd.append('name', p.name);
           fd.append('description', p.description || '');
-          fd.append('link_label', p.link_label || 'Переглянути');
+          fd.append('link_label', p.link_label || t('builder.view_label'));
           fd.append('link_url', normalizeUrl(p.link_url));
           if (p.bg_image instanceof File) fd.append('bg_image', p.bg_image);
-          await cardsApi.addProject(card.id, fd);
+          const { data: savedProject } = await cardsApi.addProject(card.id, fd);
+          savedProjects.push({ localId: p.id, savedProject });
         }
+      }
+      if (savedProjects.length) {
+        setSavedProjects(savedProjects);
       }
 
       toast.success(t('toast.saved'));
@@ -72,7 +79,9 @@ export default function CreateCardPage() {
       if (!card) return;
 
       const { data } = await generatorApi.generate(card.id);
-      setPreviewHTML(data.generated_html || '');
+      const html = data.generated_html || '';
+      if (!isGeneratedSiteHtml(html)) throw new Error('Invalid generated HTML');
+      setPreviewHTML(html);
       toast.success(t('toast.generated'));
     } catch {
       toast.error(t('toast.error'));
@@ -85,10 +94,10 @@ export default function CreateCardPage() {
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
       <div style={{ marginBottom: '1.5rem' }}>
         <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.8rem,4vw,2.5rem)', letterSpacing: '3px', color: '#f0ede8' }}>
-          НОВА ВІЗИТКА
+          {t('pages.create_title')}
         </h1>
         <p style={{ color: '#555', fontSize: '13px', marginTop: '4px' }}>
-          Заповни форму та натисни «Згенерувати» — AI створить унікальний сайт
+          {t('pages.create_desc')}
         </p>
       </div>
 
@@ -103,9 +112,19 @@ export default function CreateCardPage() {
   );
 }
 
+function setSavedProjects(savedProjects) {
+  window.dispatchEvent(new CustomEvent('cardforge:projects-saved', { detail: savedProjects }));
+}
+
 function normalizeUrl(value) {
   const trimmed = (value || '').trim();
   if (!trimmed) return '';
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
+}
+
+function isGeneratedSiteHtml(value) {
+  const html = (value || '').trim();
+  if (!/^<!doctype html/i.test(html)) return false;
+  return !/You.re seeing this error because you have DEBUG = True|Exception Type|Traceback|Request Method/i.test(html);
 }

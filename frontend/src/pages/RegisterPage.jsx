@@ -103,22 +103,22 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <Field label={t('auth.first_name')} error={errors.first_name}>
-              <input {...register('first_name')} placeholder="Іван" style={inputStyle} />
+              <input {...register('first_name')} placeholder={t('auth.first_name_placeholder')} style={inputStyle} />
             </Field>
             <Field label={t('auth.last_name')} error={errors.last_name}>
-              <input {...register('last_name')} placeholder="Коваль" style={inputStyle} />
+              <input {...register('last_name')} placeholder={t('auth.last_name_placeholder')} style={inputStyle} />
             </Field>
           </div>
           <Field label={t('auth.email')} error={errors.email}>
             <input {...register('email', { required: true, pattern: /^\S+@\S+\.\S+$/ })} type="email" placeholder="you@example.com" style={inputStyle} />
           </Field>
           <Field label={t('auth.password')} error={errors.password1}>
-            <input {...register('password1', { required: true, minLength: 8 })} type="password" placeholder="Мінімум 8 символів" style={inputStyle} />
+            <input {...register('password1', { required: true, minLength: 8 })} type="password" placeholder={t('auth.password_min')} style={inputStyle} />
           </Field>
           <Field label={t('auth.password2')} error={errors.password2}>
             <input
-              {...register('password2', { required: true, validate: v => v === password || 'Паролі не збігаються' })}
-              type="password" placeholder="Повторіть пароль" style={inputStyle}
+              {...register('password2', { required: true, validate: v => v === password || t('auth.password_mismatch') })}
+              type="password" placeholder={t('auth.password_repeat')} style={inputStyle}
             />
             {errors.password2 && <span style={{ fontSize: '11px', color: '#f87171' }}>{errors.password2.message}</span>}
           </Field>
@@ -147,11 +147,12 @@ export default function RegisterPage() {
 }
 
 function Field({ label, error, children }) {
+  const { t } = useTranslation();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
       <label style={{ fontSize: '12px', color: '#888' }}>{label}</label>
       {children}
-      {error && <span style={{ fontSize: '11px', color: '#f87171' }}>Обов'язкове поле</span>}
+      {error && <span style={{ fontSize: '11px', color: '#f87171' }}>{t('form.required')}</span>}
     </div>
   );
 }

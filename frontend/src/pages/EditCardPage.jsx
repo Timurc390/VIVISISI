@@ -33,20 +33,29 @@ export default function EditCardPage() {
         email: form.email, phone: form.phone, city: form.city,
         github: form.github, telegram: form.telegram, linkedin: form.linkedin,
         skills: form.skills, theme: form.theme, layout: form.layout, sphere: form.sphere,
+        design_settings: form.design_settings, content_blocks: form.content_blocks,
       });
 
       // Add new projects (those without a real server id)
       const existingIds = new Set((card?.projects || []).map(p => p.id));
+      const savedProjects = [];
       for (const p of projects) {
+        const fd = new FormData();
+        fd.append('name', p.name);
+        fd.append('description', p.description || '');
+        fd.append('link_label', p.link_label || t('builder.view_label'));
+        fd.append('link_url', normalizeUrl(p.link_url));
+        if (p.bg_image instanceof File) fd.append('bg_image', p.bg_image);
+
         if (!existingIds.has(p.id) || p._new) {
-          const fd = new FormData();
-          fd.append('name', p.name);
-          fd.append('description', p.description || '');
-          fd.append('link_label', p.link_label || 'Переглянути');
-          fd.append('link_url', normalizeUrl(p.link_url));
-          if (p.bg_image instanceof File) fd.append('bg_image', p.bg_image);
-          await cardsApi.addProject(id, fd);
+          const { data: savedProject } = await cardsApi.addProject(id, fd);
+          savedProjects.push({ localId: p.id, savedProject });
+        } else {
+          await cardsApi.updateProject(id, p.id, fd);
         }
+      }
+      if (savedProjects.length) {
+        window.dispatchEvent(new CustomEvent('cardforge:projects-saved', { detail: savedProjects }));
       }
 
       // Remove deleted projects
@@ -73,9 +82,12 @@ export default function EditCardPage() {
   const handleGenerate = async (form, projects) => {
     setIsGenerating(true);
     try {
-      await saveCard(form, projects);
+      const saved = await saveCard(form, projects);
+      if (!saved) return;
       const { data } = await generatorApi.generate(id);
-      setPreviewHTML(data.generated_html || '');
+      const html = data.generated_html || '';
+      if (!isGeneratedSiteHtml(html)) throw new Error('Invalid generated HTML');
+      setPreviewHTML(html);
       toast.success(t('toast.generated'));
     } catch {
       toast.error(t('toast.error'));
@@ -88,7 +100,7 @@ export default function EditCardPage() {
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', color: '#555' }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ width: 32, height: 32, border: '2px solid rgba(232,255,71,0.3)', borderTopColor: '#e8ff47', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 1rem' }} />
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px', letterSpacing: '1px' }}>ЗАВАНТАЖЕННЯ...</div>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px', letterSpacing: '1px' }}>{t('pages.loading')}</div>
       </div>
     </div>
   );
@@ -96,7 +108,7 @@ export default function EditCardPage() {
   if (isError) return (
     <div style={{ textAlign: 'center', padding: '4rem', color: '#f87171' }}>
       <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚠️</div>
-      Візитку не знайдено. <button onClick={() => navigate('/dashboard')} style={{ color: '#e8ff47', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>До дашборду</button>
+      {t('pages.card_not_found')} <button onClick={() => navigate('/dashboard')} style={{ color: '#e8ff47', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>{t('pages.to_dashboard')}</button>
     </div>
   );
 
@@ -105,7 +117,7 @@ export default function EditCardPage() {
       <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(1.8rem,4vw,2.5rem)', letterSpacing: '3px', color: '#f0ede8' }}>
-            РЕДАГУВАННЯ
+            {t('pages.edit_title')}
           </h1>
           <p style={{ color: '#555', fontSize: '13px', marginTop: '4px' }}>
             {card?.full_name} · {card?.role}
@@ -122,14 +134,14 @@ export default function EditCardPage() {
               fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px',
             }}
           >
-            🔗 Публічна сторінка
+            🔗 {t('pages.public_page')}
           </a>
           <button onClick={() => navigate('/dashboard')} style={{
             background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: '8px', color: '#666', padding: '8px 16px',
             cursor: 'pointer', fontSize: '13px', fontFamily: 'DM Sans, sans-serif',
           }}>
-            ← Назад
+            ← {t('builder.back')}
           </button>
         </div>
       </div>
@@ -153,4 +165,10 @@ function normalizeUrl(value) {
   if (!trimmed) return '';
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
+}
+
+function isGeneratedSiteHtml(value) {
+  const html = (value || '').trim();
+  if (!/^<!doctype html/i.test(html)) return false;
+  return !/You.re seeing this error because you have DEBUG = True|Exception Type|Traceback|Request Method/i.test(html);
 }

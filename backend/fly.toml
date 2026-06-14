@@ -1,0 +1,26 @@
+app = "cardforge-api"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DJANGO_SETTINGS_MODULE = "cardforge.settings"
+  DEBUG = "False"
+  ALLOWED_HOSTS = "cardforge-api.fly.dev"
+  FRONTEND_URL = "https://cardforge-web.fly.dev"
+
+[deploy]
+  release_command = "python manage.py migrate"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[mounts]]
+  source = "cardforge_media"
+  destination = "/app/media"

@@ -9,11 +9,12 @@ const LANGS = [
 ];
 
 export default function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, setLanguage } = useAuthStore();
   const [open, setOpen] = useState(false);
 
-  const current = LANGS.find(l => l.code === i18n.language) || LANGS[0];
+  const activeLanguage = (i18n.resolvedLanguage || i18n.language || 'uk').split('-')[0];
+  const current = LANGS.find(l => l.code === activeLanguage) || LANGS[0];
 
   const handleChange = async (code) => {
     i18n.changeLanguage(code);
@@ -37,8 +38,10 @@ export default function LanguageSwitcher() {
           fontFamily: 'DM Mono, monospace',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: '6px',
           transition: 'all 0.2s',
+          minWidth: '78px',
         }}
       >
         <span>{current.flag}</span>
@@ -56,7 +59,7 @@ export default function LanguageSwitcher() {
           borderRadius: '10px',
           padding: '6px',
           zIndex: 200,
-          minWidth: '120px',
+          minWidth: '156px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
         }}>
           {LANGS.map(lang => (
@@ -68,10 +71,10 @@ export default function LanguageSwitcher() {
                 alignItems: 'center',
                 gap: '8px',
                 width: '100%',
-                background: i18n.language === lang.code ? 'rgba(232,255,71,0.08)' : 'transparent',
+                background: activeLanguage === lang.code ? 'rgba(232,255,71,0.08)' : 'transparent',
                 border: 'none',
                 borderRadius: '7px',
-                color: i18n.language === lang.code ? '#e8ff47' : '#f0ede8',
+                color: activeLanguage === lang.code ? '#e8ff47' : '#f0ede8',
                 padding: '7px 10px',
                 fontSize: '13px',
                 cursor: 'pointer',
@@ -80,7 +83,7 @@ export default function LanguageSwitcher() {
               }}
             >
               <span>{lang.flag}</span>
-              <span>{lang.label === 'UA' ? 'Українська' : lang.label === 'EN' ? 'English' : 'Русский'}</span>
+              <span>{t(`language.${lang.code}`)}</span>
             </button>
           ))}
         </div>

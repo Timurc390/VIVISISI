@@ -14,3 +14,9 @@ class CardAdmin(admin.ModelAdmin):
     search_fields = ["full_name", "role", "owner__email"]
     inlines = [CardProjectInline]
     readonly_fields = ["slug", "views_count", "generated_html"]
+    fieldsets = (
+        (None, {"fields": ("owner", "full_name", "role", "bio", "sphere")}),
+        ("Contacts", {"fields": ("email", "phone", "city", "github", "telegram", "linkedin")}),
+        ("Design", {"fields": ("theme", "layout", "design_settings", "content_blocks")}),
+        ("Publishing", {"fields": ("slug", "is_public", "views_count", "generated_html")}),
+    )
