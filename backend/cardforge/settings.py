@@ -155,10 +155,26 @@ REST_AUTH = {
 }
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-CORS_ALLOWED_ORIGINS = [
-    env("FRONTEND_URL", default="http://localhost:3000"),
-]
+frontend_url = env("FRONTEND_URL", default="http://localhost:3000")
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[frontend_url],
+)
+CORS_ALLOWED_ORIGIN_REGEXES = env.list(
+    "CORS_ALLOWED_ORIGIN_REGEXES",
+    default=[],
+)
 CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[frontend_url],
+)
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # ── Internationalization ──────────────────────────────────────────────────────
 LANGUAGE_CODE = "uk"
